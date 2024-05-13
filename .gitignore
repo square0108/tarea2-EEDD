@@ -30,3 +30,6 @@
 *.exe
 *.out
 *.app
+
+# carpeta de configuración vscode
+/.vscode/
