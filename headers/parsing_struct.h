@@ -4,11 +4,11 @@
 #ifndef PARSING_STRUCT_H
 #define PARSING_STRUCT_H
 
-enum parse_column {
+enum Column {
     UNIVERSITY,UID,USERNAME,TWEETS,FRIENDS,FOLLOWERS,CREATEDATE
 };
 
-class uniflw_values {
+class twtdata {
     public:
         std::string university;
         unsigned long long int user_id;
@@ -17,7 +17,8 @@ class uniflw_values {
         int friends_count;
         int followers_count;
         std::string created_at;
-        uniflw_values () {
+        
+        twtdata () {
             this->university = "";
             this->user_id = 0;
             this->username = "";
