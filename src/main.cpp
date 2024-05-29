@@ -6,6 +6,7 @@
 #include <math.h>
 #include <open_hash.h>
 #include <hash_functions.h>
+#include <utility>
 
 #define CSV_NUM_COLUMNS 7
 #define CSV_NUM_ENTRIES 21070
@@ -56,14 +57,19 @@ void parse_line(std::ifstream& file, std::vector<twtdata*>& TEMP_container, size
     }
 }
 
-int main(int argc, char *argv[])
+int main()
 {
     std::vector<twtdata*> userdata;
     std::ifstream stream;
     stream.open("universities_followers.csv", std::ifstream::in);
-    parse_line(stream, userdata, 3);
-    for (auto& v : userdata) v->print_data();
-    std::cout << hc_compsum(44) << std::endl;
+    parse_line(stream, userdata, CSV_NUM_ENTRIES);
+    OpenHashTable<unsigned long long int,twtdata> poop(22000, CSandCompress);
+    for (auto& user : userdata) {
+        poop.put(user->user_id, *user);
+    }
+    for (auto& user : userdata) {
+        poop.get(user->user_id);
+    }
 
     stream.close();
     return 0;
