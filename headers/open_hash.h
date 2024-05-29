@@ -1,9 +1,7 @@
-#include <parsing_struct.h>
-#include <map_ADT.h>
+#include "parsing_struct.h"
+#include "map_ADT.h"
 #include <string>
 #include <forward_list>
-#include <list>
-#include <math.h>
 #include <iostream>
 #include <vector>
 #include <iterator>
@@ -12,26 +10,35 @@
 #define OPEN_HASH_TABLE
 #define MAX_ATTEMPTS 100
 
-template<typename KeyType, typename ValueType>
-class OpenHashTable : MapADT<KeyType, ValueType> {
-    private:
-        // TODO
-        void _rehash() {
+namespace udec {
 
-        }
+const int BIG_PRIMES[] = 
+    {12821,17977,33533,65537,139969};
+
+const int SMALL_PRIMES[] =
+    {3,7,11,13,17,23,31};
+
+template<typename KeyType, typename ValueType>
+class OpenHashTable : MapADT<KeyType, ValueType> 
+{
+    private:
+        int _used_buckets; // esto lo iba a usar para implementar rehash pero....nah
     public:
         int arr_size; // Tamaño del arreglo contenedor
         std::forward_list<std::pair<KeyType, ValueType>> *arr; // Cada elemento de este arreglo es una lista enlazada, y cada elemento de la lista enlazada es un par (clave, valor).
         int (*hashing_method)(KeyType /*key*/, int /*size*/); // Puntero a la funcion hash que utilizará la instancia de esta clase.
         const ValueType DEFAULT_VALUE; // Requiere que ValueType tenga constructor por defecto.
 
-        OpenHashTable(int s, int (*hashing_func)(KeyType, int)) {
+        OpenHashTable(int s, int (*hashing_func)(KeyType, int)) 
+        {
             this->arr_size = s;
             arr = new std::forward_list<std::pair<KeyType, ValueType>>[arr_size];
             this->hashing_method = hashing_func;
+            this->_used_buckets = 0;
         }
 
-        ~OpenHashTable() {
+        ~OpenHashTable() 
+        {
             delete[] arr;
         }
         
@@ -44,9 +51,10 @@ class OpenHashTable : MapADT<KeyType, ValueType> {
         *   - Si no existía ningún elemento con esta clave ingresada en la tabla, o falla la búsqueda, retorna "null".
         *     Si encuentra un elemento con esta clave, retorna el valor asociado a ese elemento.
         */
-        ValueType get(KeyType key) {
+        ValueType get(KeyType key) 
+        {
             int idx = hashing_method(key, arr_size);
-            auto *list_at_idx = &arr[idx];
+            std::forward_list<std::pair<KeyType,ValueType>> *list_at_idx = &arr[idx];
             // std::cout << "[GET] " << "Input key: " << key << ", hashed to: " << idx << std::endl; // debug
             for (std::pair<KeyType,ValueType>& entry : *list_at_idx) {;
                 if (key == entry.first) return entry.second;
@@ -65,45 +73,38 @@ class OpenHashTable : MapADT<KeyType, ValueType> {
         *   - Si no existía ningún elemento con esta clave ingresada en la tabla, retorna "null".
         *     Si ya existía un elemento con esta clave en la tabla, retorna el valor que fue reemplazado.
         */
-        ValueType put(KeyType key, ValueType data) {
-            if (typeid(KeyType) == typeid(unsigned long long int)) {
-                // ID Hashing
-                int idx = hashing_method(key, arr_size);
-                std::pair<KeyType,ValueType> new_entry(key,data);
-                auto *list_at_idx = &arr[idx];
+        ValueType put(KeyType key, ValueType data) 
+        {
+            int idx = hashing_method(key, arr_size); // indice obtenido al hashear la clave insertada
+            std::pair<KeyType,ValueType> new_entry(key,data); // par (key,value) de la nueva entrada 
+            std::forward_list<std::pair<KeyType,ValueType>> *list_at_idx = &arr[idx]; // linked list posicionada en el indice idx
 
-                if (list_at_idx->empty()) {
-                    list_at_idx->push_front(new_entry);
-                    return DEFAULT_VALUE;
-                }
-                else {
-                    for (std::pair<KeyType, ValueType>& entry : *list_at_idx) {
-                        if (entry.first == new_entry.first) {
-                            ValueType old_value = entry.second;
-                            entry.second = new_entry.second;
-                            
-                            return old_value;
-                        }
-                    }
-                    list_at_idx->push_front(new_entry);
-                    return DEFAULT_VALUE;
-                }
-                std::cout << "Error durante inserción" << std::endl;
-                exit(EXIT_FAILURE);
-            }
-            else if (typeid(KeyType) == typeid(std::string)) {
-                // String hashing
-                std::cout << "Detected key type: String" << std::endl;
+            // si la lista esta vacía, es porque aún no han ocurrido colisiones en este índice
+            if (list_at_idx->empty()) {
+                list_at_idx->push_front(new_entry);
+                _used_buckets++;
                 return DEFAULT_VALUE;
             }
             else {
-                std::cout << "No existe funcion hash para este tipo de clave.";
-                exit(EXIT_FAILURE);
+                // buscar la clave en la lista, para verificar si es que esta clave ya ha sido insertada antes
+                for (std::pair<KeyType, ValueType>& entry : *list_at_idx) {
+                    // si la clave ya existía, reemplazar sólo su valor asociado, con el de new_entry.
+                    if (entry.first == new_entry.first) {
+                        ValueType old_value = entry.second;
+                        entry.second = new_entry.second;
+                        return old_value;
+                    }
+                }
+                // si la clave no existía en la tabla, insertarla en la lista.
+                list_at_idx->push_front(new_entry);
+                return DEFAULT_VALUE;
             }
+            std::cout << "Error durante inserción" << std::endl;
+            exit(EXIT_FAILURE);
         }
         
-        // TODO
-        ValueType remove(KeyType key) {
+        ValueType remove(KeyType key) 
+        {
             int idx = hashing_method(key, arr_size);
             auto *list_at_idx = &arr[idx];
             // Loop chano cortesía de StackOverflow (questions/14373934)
@@ -111,6 +112,7 @@ class OpenHashTable : MapADT<KeyType, ValueType> {
                 if (iter->first == key) {
                     ValueType erased_value = iter->second;
                     list_at_idx->erase_after(prev);
+                    if (list_at_idx->empty()) _used_buckets--;
                     return erased_value;
                 }
             }
@@ -118,11 +120,13 @@ class OpenHashTable : MapADT<KeyType, ValueType> {
             return DEFAULT_VALUE;
         };
         
-        int size() {
+        int size() 
+        {
             return arr_size;
         }
 
-        bool isEmpty() {
+        bool isEmpty() 
+        {
             for (int i = 0; i < arr_size; i++) {
                 if (!(arr[i].empty())) {
                     return false;
@@ -133,7 +137,7 @@ class OpenHashTable : MapADT<KeyType, ValueType> {
         
         // todo
         // std::vector keys();
-};
+};};
 
 
 #endif

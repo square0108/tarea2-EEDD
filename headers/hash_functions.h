@@ -13,6 +13,10 @@ int h_div(unsigned long long int key, int size) {
 
 // Metodo multiply, add and divide
 int h_MAD(unsigned long long int key, int mult, int add, int size) {
+    if (mult % size == 0) {
+        // idk
+        return h_MAD(key, 1, add, size);
+    }
     return (int)((mult*key + add) % size);
 }
 

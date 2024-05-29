@@ -3,10 +3,10 @@
 #include <parsing_struct.h>
 #include <vector>
 #include <string>
-#include <math.h>
 #include <open_hash.h>
 #include <hash_functions.h>
 #include <utility>
+#include <assert.h>
 
 #define CSV_NUM_COLUMNS 7
 #define CSV_NUM_ENTRIES 21070
@@ -63,13 +63,14 @@ int main()
     std::ifstream stream;
     stream.open("universities_followers.csv", std::ifstream::in);
     parse_line(stream, userdata, CSV_NUM_ENTRIES);
-    OpenHashTable<unsigned long long int,twtdata> poop(22000, CSandCompress);
-    for (auto& user : userdata) {
-        poop.put(user->user_id, *user);
+
+    udec::OpenHashTable<unsigned long long int,twtdata> crap_table(5, bogohash);
+    twtdata defaultvalues;
+    udec::OpenHashTable<unsigned long long int,twtdata> table(22000,CSandCompress);
+    for (auto user : userdata) {
+        table.put(user->user_id, *user);
     }
-    for (auto& user : userdata) {
-        poop.get(user->user_id);
-    }
+    table.get(66449917).print_data();
 
     stream.close();
     return 0;
