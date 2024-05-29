@@ -4,13 +4,13 @@
 #ifndef CUSTOM_MAP_ADT_H
 #define CUSTOM_MAP_ADT_H
 
-template <typename KeyType, typename DataType>
+template <typename KeyType, typename ValueType>
 class MapADT {
-    virtual DataType get(KeyType key);
-    virtual DataType put(KeyType key, DataType data);
-    virtual DataType remove(KeyType key);
-    virtual int size();
-    virtual bool isEmpty();
+    virtual ValueType get(KeyType key) = 0;
+    virtual ValueType put(KeyType key, ValueType data) = 0;
+    virtual ValueType remove(KeyType key) = 0;
+    virtual int size() = 0;
+    virtual bool isEmpty() = 0;
 };
 
 #endif
