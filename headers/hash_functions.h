@@ -27,6 +27,11 @@ int CSandCompress(unsigned long long int key, int size) {
     return h_div((unsigned long long int)hc_compsum(key),size);
 }
 
+// solo para debugging, NO USAR para experimentos
+int bogohash(unsigned long long int key, int size) {
+    return 0;
+}
+
 /* Funciones con clave STRING */
 
 #endif
