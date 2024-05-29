@@ -23,14 +23,14 @@ std::string SciNot_to_ull(std::string& scinot) {
     return scinot;
 }
 
-void parse_line(std::ifstream& file, std::vector<twtdata*>& TEMP_container, size_t n_parses) {
+void parse_line(std::ifstream& file, udec::OpenHashTable<unsigned long long int, twtdata>& hash_table, size_t n_parses) {
     std::string line; // almacena la fila que se lee en cada iteración
     std::getline(file,line); // para saltarse la primera fila
     size_t line_count = 0; // numero de filas leidas
 
     while (line_count < n_parses) {
         std::getline(file,line);
-        twtdata* row_values = new twtdata;
+        twtdata row_values;
         int idx = 0;
         int line_sz = line.size();
 
@@ -49,29 +49,55 @@ void parse_line(std::ifstream& file, std::vector<twtdata*>& TEMP_container, size
             if (line_member.find("E+") != std::string::npos) { // revisar si el sub-string leido en la fila contiene notacion cientifica. Esto podría moverse fuera del for loop.
                 line_member = SciNot_to_ull(line_member);
             }
-            row_values->init_from_str(col, line_member);
+            row_values.init_from_str(col, line_member);
             idx = end_idx+1;
         }
-        TEMP_container.push_back(row_values);
+        hash_table.put(row_values.user_id, row_values);
+        line_count++;
+    }
+}
+
+void parse_line(std::ifstream& file, udec::OpenHashTable<std::string, twtdata>& hash_table, size_t n_parses) {
+    std::string line; // almacena la fila que se lee en cada iteración
+    std::getline(file,line); // para saltarse la primera fila
+    size_t line_count = 0; // numero de filas leidas
+
+    while (line_count < n_parses) {
+        std::getline(file,line);
+        twtdata row_values;
+        int idx = 0;
+        int line_sz = line.size();
+
+        for (int col = 0; col < CSV_NUM_COLUMNS; col++) {
+            std::string substring = line.substr(idx,line_sz-idx);
+            int end_idx;
+            if (substring.find(',') == std::string::npos) {
+                end_idx = line_sz;
+            }
+            else {
+                end_idx = idx+substring.find(',');
+            }
+            /* debugging print */
+            // std::cout << "col: " << col << " start_idx: " << idx << " end_idx: " << end_idx << std::endl;
+            std::string line_member = line.substr(idx,end_idx-idx);
+            if (line_member.find("E+") != std::string::npos) { // revisar si el sub-string leido en la fila contiene notacion cientifica. Esto podría moverse fuera del for loop.
+                line_member = SciNot_to_ull(line_member);
+            }
+            row_values.init_from_str(col, line_member);
+            idx = end_idx+1;
+        }
+        hash_table.put(row_values.username, row_values);
         line_count++;
     }
 }
 
 int main()
 {
-    std::vector<twtdata*> userdata;
-    std::ifstream stream;
-    stream.open("universities_followers.csv", std::ifstream::in);
-    parse_line(stream, userdata, CSV_NUM_ENTRIES);
+    std::ifstream twitter_csv;
+    twitter_csv.open("universities_followers.csv", std::ifstream::in);
+    udec::OpenHashTable<unsigned long long int,twtdata> ull_table(22000,CSandCompress);
 
-    udec::OpenHashTable<unsigned long long int,twtdata> crap_table(5, bogohash);
-    twtdata defaultvalues;
-    udec::OpenHashTable<unsigned long long int,twtdata> table(22000,CSandCompress);
-    for (auto user : userdata) {
-        table.put(user->user_id, *user);
-    }
-    table.get(66449917).print_data();
-
-    stream.close();
+    parse_line(twitter_csv,ull_table,CSV_NUM_ENTRIES);
+    twitter_csv.close();
     return 0;
 }
