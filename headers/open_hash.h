@@ -89,10 +89,16 @@ class OpenHashTable : MapADT<KeyType, ValueType>
                 // buscar la clave en la lista, para verificar si es que esta clave ya ha sido insertada antes
                 for (std::pair<KeyType, ValueType>& entry : *list_at_idx) {
                     // si la clave ya existía, reemplazar sólo su valor asociado, con el de new_entry.
+                    // NOTA: El profesor pidió que se ignoraran claves duplicadas. Este era el codigo antiguo:
+                    /*
                     if (entry.first == new_entry.first) {
                         ValueType old_value = entry.second;
                         entry.second = new_entry.second;
                         return old_value;
+                    }
+                    */
+                    if (entry.first == new_entry.first) {
+                        return data; // return el valor que intentó ser ingresado
                     }
                 }
                 // si la clave no existía en la tabla, insertarla en la lista.
