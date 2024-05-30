@@ -19,7 +19,7 @@ const int SMALL_PRIMES[] =
     {3,7,11,13,17,23,31};
 
 template<typename KeyType, typename ValueType>
-class OpenHashTable : MapADT<KeyType, ValueType> 
+class OpenHashTable : public MapADT<KeyType, ValueType> 
 {
     private:
         int _used_buckets; // esto lo iba a usar para implementar rehash pero....nah
