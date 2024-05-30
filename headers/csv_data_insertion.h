@@ -23,6 +23,30 @@ std::string SciNot_to_ull(std::string& scinot) {
 
 namespace udec {
 
+twtdata read_row_values(std::string row) 
+{
+    int cell_start_idx = 0;
+    twtdata row_values;
+    int cell_end_idx;
+    int row_length = row.size();
+
+    for (int col = 0; col < CSV_NUM_COLUMNS; col++) {
+        std::string substring = row.substr(cell_start_idx,row_length-cell_start_idx);
+        if (substring.find(',') == std::string::npos) {
+            cell_end_idx = row_length;
+        }
+        else {
+            cell_end_idx = cell_start_idx + substring.find(',');
+        }
+        std::string line_member = row.substr(cell_start_idx,cell_end_idx-cell_start_idx);
+        if (line_member.find("E+") != std::string::npos) { // revisar si el sub-string leido en la fila contiene notacion cientifica. Esto podría moverse fuera del for loop.
+            line_member = SciNot_to_ull(line_member);
+        }
+        row_values.init_from_str(col, line_member);
+        cell_start_idx = cell_end_idx+1;
+    }
+}
+
 void insert_lines(std::ifstream& file, MapADT<std::string,twtdata>& map, size_t n_parses) 
 {
     std::string line; // almacena la fila que se lee en cada iteración
@@ -45,8 +69,6 @@ void insert_lines(std::ifstream& file, MapADT<std::string,twtdata>& map, size_t 
             else {
                 end_idx = idx+substring.find(',');
             }
-            /* debugging print */
-            // std::cout << "col: " << col << " start_idx: " << idx << " end_idx: " << end_idx << std::endl;
             std::string line_member = line.substr(idx,end_idx-idx);
             if (line_member.find("E+") != std::string::npos) { // revisar si el sub-string leido en la fila contiene notacion cientifica. Esto podría moverse fuera del for loop.
                 line_member = SciNot_to_ull(line_member);
