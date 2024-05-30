@@ -6,11 +6,12 @@
 
 template <typename KeyType, typename ValueType>
 class MapADT {
-    virtual ValueType get(KeyType key) = 0;
-    virtual ValueType put(KeyType key, ValueType data) = 0;
-    virtual ValueType remove(KeyType key) = 0;
-    virtual int size() = 0;
-    virtual bool isEmpty() = 0;
+    public:
+        virtual ValueType get(KeyType) = 0;
+        virtual ValueType put(KeyType, ValueType) = 0;
+        virtual ValueType remove(KeyType) = 0;
+        virtual int size() = 0;
+        virtual bool isEmpty() = 0;
 };
 
 #endif
