@@ -8,6 +8,7 @@
 
 #define CSV_NUM_COLUMNS 7
 #define CSV_NUM_ENTRIES 21070
+const bool _parse_debug = 1;
 
 // Modifica una string de notación científica a forma decimal (no cambia tipo de dato)
 // nota: esta funcion destruye la string de entrada
@@ -21,120 +22,79 @@ std::string SciNot_to_ull(std::string& scinot) {
     return scinot;
 }
 
-namespace udec {
+namespace tarea {
 
+/* Lee una única linea (string) del .csv y la traduce a la clase ``twtdata``, asignando cada "entrada" de la fila a una variable de la clase.
+*/
 twtdata read_row_values(std::string row) 
 {
+    // Indice donde empieza una nueva entrada
     int cell_start_idx = 0;
+
+    // Objeto donde se guardarán los datos del usuario
     twtdata row_values;
+
+    // Indice donde termina una nueva entrada (las comas, excepto para el septimo valor de una fila, que termina con un newline)
     int cell_end_idx;
+
+    // Largo del string que contiene una fila del .csv
     int row_length = row.size();
 
     for (int col = 0; col < CSV_NUM_COLUMNS; col++) {
-        std::string substring = row.substr(cell_start_idx,row_length-cell_start_idx);
+        // Se construye una substring auxiliar que contiene todos los datos de la fila que no se han procesado aún. (en la iteración 0 substring es igual a row, en la iteración 1 substring contiene toda la fila excepto universidad, etc.)
+        std::string substring = row.substr(cell_start_idx, row_length-cell_start_idx);
+
+        // Si no encuentra una coma en substring, es porque llegamos al último dato de la fila.
         if (substring.find(',') == std::string::npos) {
             cell_end_idx = row_length;
         }
+
+        // Si encuentra una coma, se reasigna el índice donde termina el dato actual, al índice de la primera coma que se encontró.
         else {
             cell_end_idx = cell_start_idx + substring.find(',');
         }
+
+        // Se declara una variable que almacena al dato en formato string
         std::string line_member = row.substr(cell_start_idx,cell_end_idx-cell_start_idx);
-        if (line_member.find("E+") != std::string::npos) { // revisar si el sub-string leido en la fila contiene notacion cientifica. Esto podría moverse fuera del for loop.
+
+        // Revisar si el dato leído contiene notacion cientifica, de ser así, convertirlo a un unsigned long long int.
+        if (line_member.find("E+") != std::string::npos) {
             line_member = SciNot_to_ull(line_member);
         }
+
+        // Inicializar valores del objeto ``twtdata`` a partir de los datos (ingresados a init_from_str en formato std::string) de la fila.
         row_values.init_from_str(col, line_member);
         cell_start_idx = cell_end_idx+1;
     }
+    return row_values;
 }
 
-void insert_lines(std::ifstream& file, MapADT<std::string,twtdata>& map, size_t n_parses) 
+/* Lee N filas del .csv y devuelve un vector con "structs usuario", donde cada struct contiene a todos los datos de una fila asociados a un mismo usuario.
+*/
+std::vector<twtdata> csv_to_vector(std::ifstream& file, size_t n_rows) 
 {
-    std::string line; // almacena la fila que se lee en cada iteración
-    std::getline(file,line); // para saltarse la primera fila
-    size_t line_count = 0; // numero de filas leidas
-    double total_running_time = 0;
+    if (_parse_debug) std::cout << "Storing csv rows in vector... ";
 
-    while (line_count < n_parses) {
-        std::getline(file,line);
-        twtdata row_values;
-        int idx = 0;
-        int line_sz = line.size();
+    std::vector<twtdata> vec;
+    size_t rows_read = 0;
+    std::string row_string;
 
-        for (int col = 0; col < CSV_NUM_COLUMNS; col++) {
-            std::string substring = line.substr(idx,line_sz-idx);
-            int end_idx;
-            if (substring.find(',') == std::string::npos) {
-                end_idx = line_sz;
-            }
-            else {
-                end_idx = idx+substring.find(',');
-            }
-            std::string line_member = line.substr(idx,end_idx-idx);
-            if (line_member.find("E+") != std::string::npos) { // revisar si el sub-string leido en la fila contiene notacion cientifica. Esto podría moverse fuera del for loop.
-                line_member = SciNot_to_ull(line_member);
-            }
-            row_values.init_from_str(col, line_member);
-            idx = end_idx+1;
-        }
+    // Esto es solo para saltar la primera linea del .csv, que solo contiene una fila con los "nombres" de los datos
+    std::getline(file, row_string);
 
-        auto start = std::chrono::high_resolution_clock::now();
-        map.put(row_values.username,row_values);
-        auto end = std::chrono::high_resolution_clock::now();
+    // Leer líneas hasta alcanzar las N líneas solicitadas
+    while (rows_read < n_rows) {
 
-        // Aqui se verifica el tipo de dato de la clave
-        double running_time = std::chrono::duration_cast<std::chrono::nanoseconds>(end-start).count();
-        running_time *= 1e-9;
-        total_running_time += running_time;
+        std::getline(file,row_string);
+        twtdata row_data = read_row_values(row_string);
 
-        line_count++;
+        // Pushear nuevo usuario al vector de usuarios que se devolverá.
+        vec.push_back(row_data);
+        rows_read++;
     }
-    std::cout << "username_hash" << ";" << n_parses << ";" << total_running_time << std::endl;
-}
 
-void insert_lines(std::ifstream& file, MapADT<unsigned long long int,twtdata>& map, size_t n_parses) 
-{
-    std::string line; // almacena la fila que se lee en cada iteración
-    std::getline(file,line); // para saltarse la primera fila
-    size_t line_count = 0; // numero de filas leidas
-    double total_running_time = 0;
-
-    while (line_count < n_parses) {
-        std::getline(file,line);
-        twtdata row_values;
-        int idx = 0;
-        int line_sz = line.size();
-
-        for (int col = 0; col < CSV_NUM_COLUMNS; col++) {
-            std::string substring = line.substr(idx,line_sz-idx);
-            int end_idx;
-            if (substring.find(',') == std::string::npos) {
-                end_idx = line_sz;
-            }
-            else {
-                end_idx = idx+substring.find(',');
-            }
-            /* debugging print */
-            // std::cout << "col: " << col << " start_idx: " << idx << " end_idx: " << end_idx << std::endl;
-            std::string line_member = line.substr(idx,end_idx-idx);
-            if (line_member.find("E+") != std::string::npos) { // revisar si el sub-string leido en la fila contiene notacion cientifica. Esto podría moverse fuera del for loop.
-                line_member = SciNot_to_ull(line_member);
-            }
-            row_values.init_from_str(col, line_member);
-            idx = end_idx+1;
-        }
-
-        auto start = std::chrono::high_resolution_clock::now();
-        map.put(row_values.user_id,row_values);
-        auto end = std::chrono::high_resolution_clock::now();
-
-        // Aqui se verifica el tipo de dato de la clave
-        double running_time = std::chrono::duration_cast<std::chrono::nanoseconds>(end-start).count();
-        running_time *= 1e-9;
-        total_running_time += running_time;
-
-        line_count++;
-    }
-    std::cout << "ID_hash" << ";" << n_parses << ";" << total_running_time << std::endl;
+    if (_parse_debug) std::cout << "done" << std::endl;
+    return vec;
 }
 
 };
