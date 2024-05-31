@@ -31,14 +31,9 @@ int main(int argc, char **argv)
     // Verificar que se ingresaron los parametros correctamente al intentar ejecutar el codigo
     if (argc != 4)
         cout << "Invalid syntax. Usage: ./main <table type> <key type> <number of insertions>" << endl;
-    
-    // Variable Input File Stream desde cual se leerá el dataset .csv
+
     ifstream twitter_csv;
-
-    // Tiempo de ejecucion total de las N inserciones que se solicitaron al programa
     double total_running_time = 0;
-
-    // Sólo para aclarar el código, estos son los argumentos que se ingresan
     char* table_type = argv[1];
     char* key_type = argv[2];
     size_t num_elements = atoi(argv[3]);
@@ -46,7 +41,6 @@ int main(int argc, char **argv)
     // Vector que almacena instancias del struct "userdata", el cual guarda los valores de una fila del .csv (universidad, ID, nombre de usuario...)
     vector<userdata> twitter_values;
 
-    // csv_to_vector ingresa los valores leídos en num_elements filas del .csv al vector anterior.
     twitter_csv.open("universities_followers.csv", ifstream::in);
     twitter_values = tarea::csv_to_vector(twitter_csv, num_elements);
     
