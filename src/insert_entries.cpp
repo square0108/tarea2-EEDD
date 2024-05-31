@@ -11,43 +11,108 @@
 #include "parsing_struct.h"
 #include "csv_data_insertion.h"
 
+const bool _main_debug = 1;
+
+/* IMPORTANTE: El codigo no puede ejecutarse solo con ./main, deben proporcionarse 3 argumentos en este orden:
+*
+* - <table type> : Tipo de tabla a usar. Posibles valores: {STL_map,open_hash,closed_hash}
+* - <key type> : Tipo de llave que se va a ocupar para hashear. Posibles valores: {user_id,username}
+* - <number of insertions> : numero de inserciones a realizar en el experimento. La tabla posee 21070 filas con datos.
+*
+* Ejemplo de uso:
+* - Compilacion: ``g++ src/insert_entries.cpp -I headers/ -o hola``
+* - Ejecucion: ``./hola open_hash user_id 20000``
+*/
 int main(int argc, char **argv)
 {
+    // Verificar que se ingresaron los parametros correctamente al intentar ejecutar el codigo
     if (argc != 4)
         std::cout << "Invalid syntax. Usage: ./main <table type> <key type> <number of insertions>" << std::endl;
     
+    // Variable Input File Stream desde cual se leerá el dataset .csv
     std::ifstream twitter_csv;
+
+    // Tiempo de ejecucion total de las N inserciones que se solicitaron al programa
+    double total_running_time = 0;
+
+    // Sólo para aclarar el código, estos son los argumentos que se ingresan
+    char* table_type = argv[1];
+    char* key_type = argv[2];
+    size_t num_elements = atoi(argv[3]);
+
+    // Vector que almacena instancias del struct "twtdata", el cual guarda los valores de una fila del .csv (universidad, ID, nombre de usuario...)
+    std::vector<twtdata> twitter_values;
+
+    // csv_to_vector ingresa los valores leídos en num_elements filas del .csv al vector anterior.
     twitter_csv.open("universities_followers.csv", std::ifstream::in);
+    twitter_values = tarea::csv_to_vector(twitter_csv, num_elements);
     
-    if (strcmp(argv[2],"username") == 0) {
-        if (strcmp(argv[1],"STL_map") == 0) {
-            std::unordered_map<std::string,twtdata> map;
+    // Inserciones para claves tipo USERNAME
+    if (strcmp(key_type,"username") == 0) {
+
+        // Clave USERNAME ; Tabla STL MAP
+        if (strcmp(table_type,"STL_map") == 0) {
+            // pendiente
         }
-        else if (strcmp(argv[1],"open_hash") == 0) {
-            udec::OpenHashTable<std::string,twtdata> table(22189,string_hash);
-            udec::insert_lines(twitter_csv,table,(size_t)atoi(argv[3]));
+
+        // Clave USERNAME ; Tabla OPEN HASH
+        else if (strcmp(table_type,"open_hash") == 0) {
+
+            tarea::OpenHashTable<std::string,twtdata> openhash(22189,string_hash);
+            twtdata current_row;
+
+            for (twtdata& row : twitter_values) {
+                current_row = row;
+                auto start = std::chrono::high_resolution_clock::now();
+                openhash.put(current_row.username,current_row);
+                auto end = std::chrono::high_resolution_clock::now();
+
+                total_running_time += (1e-9)*(std::chrono::duration_cast<std::chrono::nanoseconds>(end-start).count());
+            }
         }
-        else if (strcmp(argv[1],"closed_hash") == 0) {
-            return 0;
+
+        // Clave USERNAME ; Tabla CLOSED HASH
+        else if (strcmp(table_type,"closed_hash") == 0) {
+            // pendiente
         }
     }
-    else if (strcmp(argv[2],"user_id") == 0) {
-        if (strcmp(argv[1],"STL_map") == 0) {
-            std::unordered_map<unsigned long long int,twtdata> map;
+
+    // Inserciones para claves tipo USER ID
+    else if (strcmp(key_type,"user_id") == 0) {
+        
+        // Clave ID ; Tabla STL MAP
+        if (strcmp(table_type,"STL_map") == 0) {
+            // pendiente
         }
-        else if (strcmp(argv[1],"open_hash") == 0) {
-            udec::OpenHashTable<unsigned long long int,twtdata> table(22189,CSandCompress);
-            udec::insert_lines(twitter_csv,table,(size_t)atoi(argv[3]));
+
+        // Clave ID ; Tabla OPEN HASH
+        else if (strcmp(table_type,"open_hash") == 0) {
+            tarea::OpenHashTable<unsigned long long int,twtdata> openhash(22189,CSandCompress);
+            twtdata current_row;
+            for (auto& row : twitter_values) {
+                current_row = row;
+                auto start = std::chrono::high_resolution_clock::now();
+                openhash.put(current_row.user_id,current_row);
+                auto end = std::chrono::high_resolution_clock::now();
+
+                total_running_time += (1e-9)*(std::chrono::duration_cast<std::chrono::nanoseconds>(end-start).count());
+            }
         }
-        else if (strcmp(argv[1],"closed_hash") == 0) {
-            return 0;
+
+        // Clave ID ; Tabla CLOSED HASH
+        else if (strcmp(table_type,"closed_hash") == 0) {
+            // pendiente
         }
     }
+
+    // Si key_type no es igual ni a username ni a user_id, entonces se ejecutó incorrectamente el programa.
     else {
         std::cout << "Invalid hash key parameter. Possible key types: username, user_id" << std::endl;
         return -1;
     }
 
+    // Se imprimen los resultados de un experimento con N inserciones (N: num_elements).
+    std::cout << (std::string)key_type << ";" << num_elements << ";" << total_running_time << std::endl;
     twitter_csv.close();
     return 0;
 }
