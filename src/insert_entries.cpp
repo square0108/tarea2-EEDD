@@ -8,10 +8,12 @@
 #include <chrono>
 #include "open_hash.h"
 #include "hash_functions.h"
-#include "parsing_struct.h"
+#include "datos_usuario.h"
 #include "csv_data_insertion.h"
 
+#define BIG_PRIME_SIZE 22189
 const bool _main_debug = 1;
+
 using namespace std;
 
 /* IMPORTANTE: El codigo no puede ejecutarse solo con ./main, deben proporcionarse 3 argumentos en este orden:
@@ -41,8 +43,8 @@ int main(int argc, char **argv)
     char* key_type = argv[2];
     size_t num_elements = atoi(argv[3]);
 
-    // Vector que almacena instancias del struct "twtdata", el cual guarda los valores de una fila del .csv (universidad, ID, nombre de usuario...)
-    vector<twtdata> twitter_values;
+    // Vector que almacena instancias del struct "userdata", el cual guarda los valores de una fila del .csv (universidad, ID, nombre de usuario...)
+    vector<userdata> twitter_values;
 
     // csv_to_vector ingresa los valores leídos en num_elements filas del .csv al vector anterior.
     twitter_csv.open("universities_followers.csv", ifstream::in);
@@ -53,23 +55,35 @@ int main(int argc, char **argv)
 
         // Clave USERNAME ; Tabla STL MAP
         if (strcmp(table_type,"STL_map") == 0) {
-            // pendiente
+            
+            std::unordered_map<std::string,userdata> map;
+            userdata current_row;
+
+            for (userdata& row : twitter_values) {
+                current_row = row;
+                auto start = chrono::high_resolution_clock::now();
+                map.insert({current_row.username,current_row});
+                auto end = chrono::high_resolution_clock::now();
+                total_running_time += (1e-9)*(chrono::duration_cast<chrono::nanoseconds>(end-start).count());
+            }
+
         }
 
         // Clave USERNAME ; Tabla OPEN HASH
         else if (strcmp(table_type,"open_hash") == 0) {
 
-            tarea::OpenHashTable<string,twtdata> openhash(22189,string_hash);
-            twtdata current_row;
+            tarea::OpenHashTable<string,userdata> openhash(BIG_PRIME_SIZE,string_hash);
+            userdata current_row;
 
-            for (twtdata& row : twitter_values) {
+            for (userdata& row : twitter_values) {
                 current_row = row;
                 auto start = chrono::high_resolution_clock::now();
                 openhash.put(current_row.username,current_row);
                 auto end = chrono::high_resolution_clock::now();
-
                 total_running_time += (1e-9)*(chrono::duration_cast<chrono::nanoseconds>(end-start).count());
             }
+
+            openhash.get_collisions_vector();
         }
 
         // Clave USERNAME ; Tabla CLOSED HASH
@@ -83,13 +97,24 @@ int main(int argc, char **argv)
         
         // Clave ID ; Tabla STL MAP
         if (strcmp(table_type,"STL_map") == 0) {
-            // pendiente
+                        
+            std::unordered_map<unsigned long long int,userdata> map;
+            userdata current_row;
+
+            for (userdata& row : twitter_values) {
+                current_row = row;
+                auto start = chrono::high_resolution_clock::now();
+                map.insert({current_row.user_id,current_row});
+                auto end = chrono::high_resolution_clock::now();
+                total_running_time += (1e-9)*(chrono::duration_cast<chrono::nanoseconds>(end-start).count());
+            }
+
         }
 
         // Clave ID ; Tabla OPEN HASH
         else if (strcmp(table_type,"open_hash") == 0) {
-            tarea::OpenHashTable<unsigned long long int,twtdata> openhash(22189,CSandCompress);
-            twtdata current_row;
+            tarea::OpenHashTable<unsigned long long int,userdata> openhash(BIG_PRIME_SIZE,CSandCompress);
+            userdata current_row;
             for (auto& row : twitter_values) {
                 current_row = row;
                 auto start = chrono::high_resolution_clock::now();
