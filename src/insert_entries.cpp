@@ -12,6 +12,7 @@
 #include "csv_data_insertion.h"
 
 const bool _main_debug = 1;
+using namespace std;
 
 /* IMPORTANTE: El codigo no puede ejecutarse solo con ./main, deben proporcionarse 3 argumentos en este orden:
 *
@@ -27,10 +28,10 @@ int main(int argc, char **argv)
 {
     // Verificar que se ingresaron los parametros correctamente al intentar ejecutar el codigo
     if (argc != 4)
-        std::cout << "Invalid syntax. Usage: ./main <table type> <key type> <number of insertions>" << std::endl;
+        cout << "Invalid syntax. Usage: ./main <table type> <key type> <number of insertions>" << endl;
     
     // Variable Input File Stream desde cual se leerá el dataset .csv
-    std::ifstream twitter_csv;
+    ifstream twitter_csv;
 
     // Tiempo de ejecucion total de las N inserciones que se solicitaron al programa
     double total_running_time = 0;
@@ -41,10 +42,10 @@ int main(int argc, char **argv)
     size_t num_elements = atoi(argv[3]);
 
     // Vector que almacena instancias del struct "twtdata", el cual guarda los valores de una fila del .csv (universidad, ID, nombre de usuario...)
-    std::vector<twtdata> twitter_values;
+    vector<twtdata> twitter_values;
 
     // csv_to_vector ingresa los valores leídos en num_elements filas del .csv al vector anterior.
-    twitter_csv.open("universities_followers.csv", std::ifstream::in);
+    twitter_csv.open("universities_followers.csv", ifstream::in);
     twitter_values = tarea::csv_to_vector(twitter_csv, num_elements);
     
     // Inserciones para claves tipo USERNAME
@@ -58,16 +59,16 @@ int main(int argc, char **argv)
         // Clave USERNAME ; Tabla OPEN HASH
         else if (strcmp(table_type,"open_hash") == 0) {
 
-            tarea::OpenHashTable<std::string,twtdata> openhash(22189,string_hash);
+            tarea::OpenHashTable<string,twtdata> openhash(22189,string_hash);
             twtdata current_row;
 
             for (twtdata& row : twitter_values) {
                 current_row = row;
-                auto start = std::chrono::high_resolution_clock::now();
+                auto start = chrono::high_resolution_clock::now();
                 openhash.put(current_row.username,current_row);
-                auto end = std::chrono::high_resolution_clock::now();
+                auto end = chrono::high_resolution_clock::now();
 
-                total_running_time += (1e-9)*(std::chrono::duration_cast<std::chrono::nanoseconds>(end-start).count());
+                total_running_time += (1e-9)*(chrono::duration_cast<chrono::nanoseconds>(end-start).count());
             }
         }
 
@@ -91,11 +92,11 @@ int main(int argc, char **argv)
             twtdata current_row;
             for (auto& row : twitter_values) {
                 current_row = row;
-                auto start = std::chrono::high_resolution_clock::now();
+                auto start = chrono::high_resolution_clock::now();
                 openhash.put(current_row.user_id,current_row);
-                auto end = std::chrono::high_resolution_clock::now();
+                auto end = chrono::high_resolution_clock::now();
 
-                total_running_time += (1e-9)*(std::chrono::duration_cast<std::chrono::nanoseconds>(end-start).count());
+                total_running_time += (1e-9)*(chrono::duration_cast<chrono::nanoseconds>(end-start).count());
             }
         }
 
@@ -107,12 +108,12 @@ int main(int argc, char **argv)
 
     // Si key_type no es igual ni a username ni a user_id, entonces se ejecutó incorrectamente el programa.
     else {
-        std::cout << "Invalid hash key parameter. Possible key types: username, user_id" << std::endl;
+        cout << "Invalid hash key parameter. Possible key types: username, user_id" << endl;
         return -1;
     }
 
     // Se imprimen los resultados de un experimento con N inserciones (N: num_elements).
-    std::cout << (std::string)key_type << ";" << num_elements << ";" << total_running_time << std::endl;
+    cout << (string)key_type << ";" << num_elements << ";" << total_running_time << endl;
     twitter_csv.close();
     return 0;
 }

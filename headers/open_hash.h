@@ -10,7 +10,7 @@
 #define OPEN_HASH_TABLE
 #define MAX_ATTEMPTS 100
 
-namespace udec {
+namespace tarea {
 
 const int BIG_PRIMES[] = 
     {12821,17977,33533,65537,139969};

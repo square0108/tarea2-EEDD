@@ -40,10 +40,12 @@ int CSandCompress(unsigned long long int key, int size)
 }
 
 // solo para debugging, NO USAR para experimentos
+/*
 int bogohash(unsigned long long int key, int size) 
 {
     return 0;
 }
+*/
 
 /* Hash Codes con clave String*/
 
