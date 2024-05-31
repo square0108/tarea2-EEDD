@@ -1,4 +1,4 @@
-#include "parsing_struct.h"
+#include "datos_usuario.h"
 #include "map_ADT.h"
 #include <string>
 #include <forward_list>
@@ -22,6 +22,7 @@ template<typename KeyType, typename ValueType>
 class OpenHashTable : public MapADT<KeyType, ValueType> 
 {
     private:
+        const bool _DEBUG_PRINTS = 0;
         int _used_buckets; // esto lo iba a usar para implementar rehash pero....nah
     public:
         int arr_size; // Tamaño del arreglo contenedor
@@ -139,6 +140,49 @@ class OpenHashTable : public MapADT<KeyType, ValueType>
                 }
             }
             return true;
+        }
+
+        /* Esta función es en realidad sólo para debugging, permite ver cuántos elementos hay en cada bucket de la tabla.
+        * 
+        * - PARAMETROS: ninguno
+        * - RETURN: Vector con la cantidad de elementos en cada posicion de la tabla, 0 es una posicion vacia.
+        */
+        std::vector<int> get_collisions_vector()
+        {
+            std::vector<int> output;
+            for (int i = 0; i < arr_size; i++) {
+                
+                auto *list_at_idx = &arr[i];
+                if (list_at_idx->empty()) {
+                    output.push_back(0);
+                    continue;
+                }
+                else {
+                    int elems_at_idx = 0;
+                    for (auto val : *list_at_idx) {
+                        elems_at_idx++;
+                    }
+                    output.push_back(elems_at_idx);
+                }
+            }
+
+            if (_DEBUG_PRINTS) {
+                const int _ELEMS_PER_LINE = 30;
+                int counter = 0;
+
+                std::cout << "Elementos en cada posicion de la tabla OpenHash " << this << " :" << std::endl;
+                for (int elem : output) {
+                    std::cout << elem << ",";
+                    counter++;
+                    if (counter >= _ELEMS_PER_LINE) {
+                        counter = 0;
+                        std::cout << std::endl;
+                    }
+                }
+                std::cout << std::endl;
+            }
+
+            return output;
         }
         
         // todo
