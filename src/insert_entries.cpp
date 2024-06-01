@@ -10,6 +10,7 @@
 #include "hash_functions.h"
 #include "datos_usuario.h"
 #include "csv_data_insertion.h"
+#include "closed_hash.h"
 
 #define BIG_PRIME_SIZE 22189
 const bool _main_debug = 1;
@@ -77,12 +78,26 @@ int main(int argc, char **argv)
                 total_running_time += (1e-9)*(chrono::duration_cast<chrono::nanoseconds>(end-start).count());
             }
 
+            openhash.get("cristobalquirog").print_data();
+
             openhash.get_collisions_vector();
         }
 
         // Clave USERNAME ; Tabla CLOSED HASH
         else if (strcmp(table_type,"closed_hash") == 0) {
-            // pendiente
+            ClosedHashTable<string,userdata> closedhash(BIG_PRIME_SIZE,string_hash,LINEAR_PROBING);
+            userdata current_row;
+
+            for (userdata& row : twitter_values) {
+                current_row = row;
+                auto start = chrono::high_resolution_clock::now();
+                closedhash.put(current_row.username,current_row);
+                auto end = chrono::high_resolution_clock::now();
+                total_running_time += (1e-9)*(chrono::duration_cast<chrono::nanoseconds>(end-start).count());
+            }
+
+            closedhash.get("aedearica").print_data();
+            
         }
     }
 

@@ -76,4 +76,9 @@ int string_hash(std::string key, int size) {
     return h_div(hc_poly_accumulation(key),size);
 }
 
+int doublehash_h2(int hashed_key)
+{
+    return (7 - (hashed_key % 7));
+}
+
 #endif
