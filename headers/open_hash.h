@@ -8,7 +8,6 @@
 
 #ifndef OPEN_HASH_TABLE
 #define OPEN_HASH_TABLE
-#define MAX_ATTEMPTS 100
 
 namespace tarea {
 
@@ -24,12 +23,11 @@ class OpenHashTable : public MapADT<KeyType, ValueType>
     private:
         const bool _DEBUG_PRINTS = 0;
         int _used_buckets; // esto lo iba a usar para implementar rehash pero....nah
-    public:
-        int arr_size; // Tamaño del arreglo contenedor
-        std::forward_list<std::pair<KeyType, ValueType>> *arr; // Cada elemento de este arreglo es una lista enlazada, y cada elemento de la lista enlazada es un par (clave, valor).
-        int (*hashing_method)(KeyType /*key*/, int /*size*/); // Puntero a la funcion hash que utilizará la instancia de esta clase.
+        int arr_size;
+        std::forward_list<std::pair<KeyType, ValueType>> *arr; 
+        int (*hashing_method)(KeyType /*key*/, int /*size*/); 
         const ValueType DEFAULT_VALUE; // Requiere que ValueType tenga constructor por defecto.
-
+    public:
         OpenHashTable(int s, int (*hashing_func)(KeyType, int)) 
         {
             this->arr_size = s;
