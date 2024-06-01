@@ -10,8 +10,8 @@ using namespace std;
 #define CLOSED_HASH_H
 
 #define INF 99999
-#define INTENTOS_MAXIMOS 400
 #define MIN_TABLE_SIZE 11
+const int MAX_ATTEMPTS = 100;
 
 enum probing_type {
     LINEAR_PROBING,QUADRATIC_PROBING,DOUBLE_HASHING
@@ -101,7 +101,7 @@ template <typename KeyType, typename ValueType>
 ValueType ClosedHashTable<KeyType,ValueType>::get(KeyType clave_ingresada)
 {
     // _hashing_method es utilizado dentro de las funciones probing, por lo que no es necesario llamarlo direcetamente aqui.
-    for (int i = 0; i < INF; i++) {
+    for (int i = 0; i < MAX_ATTEMPTS; i++) {
         int hashed_idx;
         switch (_probing_method) {
             case LINEAR_PROBING:
@@ -140,7 +140,7 @@ ValueType ClosedHashTable<KeyType,ValueType>::get(KeyType clave_ingresada)
 template <typename KeyType, typename ValueType>
 ValueType ClosedHashTable<KeyType,ValueType>::put(KeyType clave_ingresada, ValueType valor_ingresado)
 {
-    for (int i = 0; i < INF; i++) {
+    for (int i = 0; i < MAX_ATTEMPTS; i++) {
         int hashed_idx;
         switch (_probing_method) {
             case LINEAR_PROBING:
@@ -164,7 +164,7 @@ ValueType ClosedHashTable<KeyType,ValueType>::put(KeyType clave_ingresada, Value
         }
     }
     // Si llega aqui, la inserción falló.
-    std::cout << "Intentos maximos alcanzados." << std::endl;
+    std::cout << "Insercion fallada para clave: " << clave_ingresada << " ; Limite de probes alcanzado (" << MAX_ATTEMPTS << ")" << std::endl;
     return valor_ingresado;
 }
 
