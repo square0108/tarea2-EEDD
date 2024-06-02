@@ -65,7 +65,7 @@ class OpenHashTable : public MapADT<KeyType, ValueType>
                 // Búsqueda fallida
                 if (attempts >= MAX_ATTEMPTS_OH) break;
             }
-            // std::cout << "Couldn't find any entry with key " << key << std::endl; // debug
+            std::cout << "Couldn't find any entry with key " << key << std::endl; // debug
             return DEFAULT_VALUE;
         };
 

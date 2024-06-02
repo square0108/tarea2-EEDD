@@ -19,7 +19,7 @@
 
 // Se inicializan todas las tablas hash con esta constante. Algunos otros primos grandes: {12821,17977,22187,24821,30109,33533,65537,139969}.
 // Con ALL_TABLES_SIZE = 30109 el factor de carga se *aproximará* a 0.70 al insertar todas las 21070 entradas.  
-#define ALL_TABLES_SIZE 24821
+const int ALL_TABLES_SIZE = 24821;
 double total_running_time = 0;
 
 using namespace std;

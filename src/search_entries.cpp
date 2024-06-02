@@ -22,7 +22,7 @@ using namespace std;
 
 // Se inicializan todas las tablas hash con esta constante. Algunos otros primos grandes: {12821,17977,22187,24821,30109,33533,65537,139969}.
 // Con ALL_TABLES_SIZE = 30109 el factor de carga se *aproximará* a 0.70 al insertar todas las 21070 entradas.  
-const int ALL_TABLES_SIZE = 30109;
+const int ALL_TABLES_SIZE = 24821;
 
 // Numero de valores del dataset Twitter que se pre-insertarán en las tablas antes de realizar búsquedas
 const int PRE_INSERTIONS = CSV_NUM_ENTRIES;
