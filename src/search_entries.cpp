@@ -20,7 +20,7 @@
 
 using namespace std;
 
-// Se inicializan todas las tablas hash con esta constante. Algunos otros primos grandes: {12821,17977,22187,24821,30109,33533,65537,139969}.
+// Se inicializan todas las tablas hash con esta constante. Algunos otros primos grandes: {12821,17977,22187,24821,27191,30109,33533,65537,139969}.
 // Con ALL_TABLES_SIZE = 30109 el factor de carga se *aproximará* a 0.70 al insertar todas las 21070 entradas.  
 const int ALL_TABLES_SIZE = 24821;
 
@@ -54,7 +54,7 @@ int main(int argc, char** argv)
 {
     // Verificar que se ingresaron los parametros correctamente al intentar ejecutar el codigo
     if (argc != 5)
-        cout << "Invalid syntax. Usage: ./executable <dataset type> <table type> <key type> <number of insertions> <number of searches>" << endl;
+        cout << "Invalid syntax. Usage: ./executable <dataset type> <table type> <key type> <number of searches>" << endl;
     
     ifstream stream;
     vector<userdata> experiment_dataset;
@@ -139,7 +139,7 @@ int main(int argc, char** argv)
         }
     }
 
-    std::cout << total_running_time << std::endl;
+    std::cout << tableType_arg << ";" << datasetType_arg << ";" << ALL_TABLES_SIZE << ";" << keyType_arg << ";" << n_searches << ";" << total_running_time << std::endl;
 
     return 0;
 }
