@@ -6,6 +6,7 @@
 #include <cstring>
 #include <utility>
 #include <chrono>
+#include <random>
 #include "open_hash.h"
 #include "hash_functions.h"
 #include "datos_usuario.h"
@@ -209,11 +210,16 @@ std::vector<userdata> create_dummy_data(int n_rows) {
     // Sabemos que en el dataset el ID mínimo es 12852, podemos seguramente rellenar todos los valores antes de este tal que no sean del dataset.
     // Adicionalmente, el anterior ID más pequeño es 81213, así que también puede optarse por rellenar los ID's entre 12852 y 81213.
     const unsigned long long int SMALLEST_ID = 12852;
+    const unsigned long long int SECOND_SMALLEST_ID = 81213;
+    std::random_device rng;
+    mt19937 gen(rng());
+    uniform_int_distribution<> dis(SMALLEST_ID+1,SECOND_SMALLEST_ID-1);
+
     std::vector<userdata> out;
     for (int i = 0; i < n_rows; i++) {
         userdata user;
-        user.user_id = SMALLEST_ID+i+1;
-        user.username = "Usuario" + std::to_string(i);
+        user.user_id = dis(gen)*SMALLEST_ID;
+        user.username = "Usuario" + std::to_string(dis(gen)*SMALLEST_ID);
         out.push_back(user);
     }
     return out;
