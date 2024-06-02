@@ -58,18 +58,19 @@ int bogohash(unsigned long long int key, int size)
 // Acumulacion polinomial
 unsigned long long int hc_poly_accumulation(std::string key) 
 {
-    // Este valor es muy importante, reducirlo aumenta la velocidad de insercion, pero podria aumentar el % de colisiones?
-    const int MAX_CHARS_TO_ADD = 12;
-
-    unsigned int poly_eval = 0;
-    int z_exp = 0;
+    unsigned int poly_result = (int)key.back();
     int strsize = key.size();
 
-    for (int i = 0; i < strsize && i < MAX_CHARS_TO_ADD; i++) {
-        poly_eval += ((int)key.at(i))*pow(_POLY_Z,z_exp);
-        z_exp++;
+    /* Regla de Horner: Con el siguiente for loop (gracias stackoverflow.com/questions/1697683/horners-rule-in-c) podemos evaluar el polinomio con muy alta eficiencia
+    *
+    *   - Coeficientes: bits de la clave (char convertido su codigo ASCII)
+    *   - Z : valor a evaluar en el polinomio (33)
+    *   
+    */
+    for (int i = strsize-1; i >= 0; --i) {
+        poly_result = poly_result * _POLY_Z + (int)key.at(i);
     }
-    return poly_eval;
+    return poly_result;
 }
 
 int string_hash(std::string key, int size) {
