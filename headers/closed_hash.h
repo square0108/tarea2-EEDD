@@ -13,6 +13,7 @@ using namespace std;
 #define INF 99999
 #define MIN_TABLE_SIZE 11
 const int MAX_ATTEMPTS_CH = 1000;
+const int DOUBLE_HASH_CONST = 17977;
 
 enum probing_type {
     LINEAR_PROBING,QUADRATIC_PROBING,DOUBLE_HASHING
@@ -227,10 +228,21 @@ int ClosedHashTable<KeyType,ValueType>::_quadratic_probing(KeyType key, int size
     return (_hashing_method(key,size) + attempt*attempt) % size;
 }
 
+/* Para el hashing double, utilizamos la función descrita en la presentación de Diccionarios:
+* 
+* ``d(k) = q - (k mod q)``, donde ``q`` < ``size`` y ``q`` es primo.
+*
+* Se utiliza una constante pre-definida, que en realidad sirve porque esta tabla se utilizará siempre para almacenar un mínimo de 21070 valores.
+*/
 template <typename KeyType,typename ValueType>
 int ClosedHashTable<KeyType,ValueType>::_double_hashing(KeyType key, int size, int attempt) {
     int hashed_key = _hashing_method(key,size);
-    return (hashed_key + (attempt)*(doublehash_h2(hashed_key))) % size;
+    if constexpr (std::is_same_v<KeyType, std::string>) {
+        return (hashed_key + attempt*(DOUBLE_HASH_CONST - (hc_poly_accumulation(key) % DOUBLE_HASH_CONST))) % size;
+    }
+    else if constexpr (std::is_same_v<KeyType, unsigned long long int>) {
+        return (hashed_key + attempt*(DOUBLE_HASH_CONST - (key % DOUBLE_HASH_CONST))) % size;
+    }
 }
 
 #endif
