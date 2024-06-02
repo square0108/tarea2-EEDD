@@ -12,9 +12,14 @@
 #include "csv_data_insertion.h"
 #include "closed_hash.h"
 
-// Se inicializan todas las tablas hash con esta constante. Algunos otros primos grandes: {12821,17977,22187,30109,33533,65537,139969}.
+/* TODO
+    - fix double hash
+    - generate better dummy data
+*/
+
+// Se inicializan todas las tablas hash con esta constante. Algunos otros primos grandes: {12821,17977,22187,24821,30109,33533,65537,139969}.
 // Con ALL_TABLES_SIZE = 30109 el factor de carga se *aproximará* a 0.70 al insertar todas las 21070 entradas.  
-#define ALL_TABLES_SIZE 30109
+#define ALL_TABLES_SIZE 24821
 double total_running_time = 0;
 
 using namespace std;
@@ -127,7 +132,7 @@ int main(int argc, char **argv)
     }
 
     // Se imprimen los resultados de un experimento con N inserciones (N: num_elements).
-    cout << (string)key_type << ";" << num_elements << ";" << total_running_time << endl;
+    cout << table_type << ";" << ALL_TABLES_SIZE << ";" << (string)key_type << ";" << num_elements << ";" << total_running_time << endl;
     twitter_csv.close();
     return 0;
 }

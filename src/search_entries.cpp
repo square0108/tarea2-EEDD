@@ -12,11 +12,16 @@
 #include "csv_data_insertion.h"
 #include "closed_hash.h"
 
+/* TODO
+    - fix double hash
+    - generate better dummy data
+*/
+
 using namespace std;
 
-// Se inicializan todas las tablas hash con esta constante. Algunos otros primos grandes: {12821,17977,22187,30109,33533,65537,139969}.
+// Se inicializan todas las tablas hash con esta constante. Algunos otros primos grandes: {12821,17977,22187,24821,30109,33533,65537,139969}.
 // Con ALL_TABLES_SIZE = 30109 el factor de carga se *aproximará* a 0.70 al insertar todas las 21070 entradas.  
-#define ALL_TABLES_SIZE 30109
+const int ALL_TABLES_SIZE = 30109;
 
 // Numero de valores del dataset Twitter que se pre-insertarán en las tablas antes de realizar búsquedas
 const int PRE_INSERTIONS = CSV_NUM_ENTRIES;

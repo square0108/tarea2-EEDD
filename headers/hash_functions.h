@@ -59,7 +59,7 @@ int bogohash(unsigned long long int key, int size)
 unsigned long long int hc_poly_accumulation(std::string key) 
 {
     // Este valor es muy importante, reducirlo aumenta la velocidad de insercion, pero podria aumentar el % de colisiones?
-    const int MAX_CHARS_TO_ADD = 7;
+    const int MAX_CHARS_TO_ADD = 12;
 
     unsigned int poly_eval = 0;
     int z_exp = 0;
@@ -78,7 +78,7 @@ int string_hash(std::string key, int size) {
 
 int doublehash_h2(int hashed_key)
 {
-    return (7 - (hashed_key % 7));
+    return (17977 - (hashed_key % 17977));
 }
 
 #endif
