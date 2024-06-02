@@ -3,6 +3,7 @@
 #include <vector>
 #include "map_ADT.h"
 #include "hash_functions.h"
+#include "csv_data_insertion.h"
 
 using namespace std;
 
@@ -11,7 +12,7 @@ using namespace std;
 
 #define INF 99999
 #define MIN_TABLE_SIZE 11
-const int MAX_ATTEMPTS = 100;
+const int MAX_ATTEMPTS_CH = 1000;
 
 enum probing_type {
     LINEAR_PROBING,QUADRATIC_PROBING,DOUBLE_HASHING
@@ -101,7 +102,7 @@ template <typename KeyType, typename ValueType>
 ValueType ClosedHashTable<KeyType,ValueType>::get(KeyType clave_ingresada)
 {
     // _hashing_method es utilizado dentro de las funciones probing, por lo que no es necesario llamarlo direcetamente aqui.
-    for (int i = 0; i < MAX_ATTEMPTS; i++) {
+    for (int i = 0; i < MAX_ATTEMPTS_CH; i++) {
         int hashed_idx;
         switch (_probing_method) {
             case LINEAR_PROBING:
@@ -140,7 +141,7 @@ ValueType ClosedHashTable<KeyType,ValueType>::get(KeyType clave_ingresada)
 template <typename KeyType, typename ValueType>
 ValueType ClosedHashTable<KeyType,ValueType>::put(KeyType clave_ingresada, ValueType valor_ingresado)
 {
-    for (int i = 0; i < MAX_ATTEMPTS; i++) {
+    for (int i = 0; i < MAX_ATTEMPTS_CH; i++) {
         int hashed_idx;
         switch (_probing_method) {
             case LINEAR_PROBING:
@@ -164,14 +165,44 @@ ValueType ClosedHashTable<KeyType,ValueType>::put(KeyType clave_ingresada, Value
         }
     }
     // Si llega aqui, la inserción falló.
-    std::cout << "Insercion fallada para clave: " << clave_ingresada << " ; Limite de probes alcanzado (" << MAX_ATTEMPTS << ")" << std::endl;
+    std::cout << "Insercion fallada para clave: " << clave_ingresada << " ; Limite de probes alcanzado (" << MAX_ATTEMPTS_CH << ")" << std::endl;
     return valor_ingresado;
 }
 
 template <typename KeyType, typename ValueType>
-ValueType ClosedHashTable<KeyType,ValueType>::remove(KeyType _alguien)
+ValueType ClosedHashTable<KeyType,ValueType>::remove(KeyType clave_ingresada)
 {
-    
+    for (int i = 0; i < MAX_ATTEMPTS_CH; i++) {
+        int hashed_idx;
+        switch (_probing_method) {
+            case LINEAR_PROBING:
+                hashed_idx = _linear_probing(clave_ingresada, _container_cap, i);
+                break;
+            case QUADRATIC_PROBING:
+                hashed_idx = _quadratic_probing(clave_ingresada, _container_cap, i);
+                break;
+            case DOUBLE_HASHING:
+                hashed_idx = _double_hashing(clave_ingresada, _container_cap, i);
+                break;
+            default:
+                std::cout << "Error: No probing type detected" << std::endl;
+                exit(EXIT_FAILURE);
+        }
+        Tupla_Hash<KeyType,ValueType> tupla_at_idx = _container->at(hashed_idx);
+
+        if (tupla_at_idx.status == OCUPADO && tupla_at_idx.key == clave_ingresada) {
+            (_container->at(hashed_idx)).status = DISPONIBLE;
+            (_container->at(hashed_idx)).value = DEFAULT_VALUE;
+            return tupla_at_idx.value;
+        }
+
+        // Si encuentra una posición vacía, entonces la clave no había sido ingresada a la tabla.
+        else if (tupla_at_idx.status == VACIO)
+            return DEFAULT_VALUE;
+    }
+    // Si llega aqui, el remove falló.
+    std::cout << "Remove fallado para clave: " << clave_ingresada << " ; Limite de probes alcanzado (" << MAX_ATTEMPTS_CH << ")" << std::endl;
+    return DEFAULT_VALUE;
 }
 
 template <typename KeyType,typename ValueType>
@@ -199,7 +230,7 @@ int ClosedHashTable<KeyType,ValueType>::_quadratic_probing(KeyType key, int size
 template <typename KeyType,typename ValueType>
 int ClosedHashTable<KeyType,ValueType>::_double_hashing(KeyType key, int size, int attempt) {
     int hashed_key = _hashing_method(key,size);
-    return (hashed_key + attempt*(doublehash_h2(hashed_key))) % size;
+    return (hashed_key + (attempt)*(doublehash_h2(hashed_key))) % size;
 }
 
 #endif

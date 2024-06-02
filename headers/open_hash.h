@@ -6,14 +6,13 @@
 #include <vector>
 #include <iterator>
 
-#ifndef OPEN_HASH_TABLE
-#define OPEN_HASH_TABLE
+#ifndef OPEN_HASH_H
+#define OPEN_HASH_H
 
 namespace tarea {
 
 const int BIG_PRIMES[] = 
     {12821,17977,33533,65537,139969};
-
 const int SMALL_PRIMES[] =
     {3,7,11,13,17,23,31};
 
@@ -21,6 +20,8 @@ template<typename KeyType, typename ValueType>
 class OpenHashTable : public MapADT<KeyType, ValueType> 
 {
     private:
+        // Intentos maximos por operacion (busqueda, insercion, eliminar).
+        int MAX_ATTEMPTS_OH;
         const bool _DEBUG_PRINTS = 0;
         int _used_buckets; // esto lo iba a usar para implementar rehash pero....nah
         int arr_size;
@@ -34,6 +35,7 @@ class OpenHashTable : public MapADT<KeyType, ValueType>
             arr = new std::forward_list<std::pair<KeyType, ValueType>>[arr_size];
             this->hashing_method = hashing_func;
             this->_used_buckets = 0;
+            this->MAX_ATTEMPTS_OH = arr_size;
         }
 
         ~OpenHashTable() 
@@ -53,12 +55,17 @@ class OpenHashTable : public MapADT<KeyType, ValueType>
         ValueType get(KeyType key) 
         {
             int idx = hashing_method(key, arr_size);
+            int attempts = 0;
             std::forward_list<std::pair<KeyType,ValueType>> *list_at_idx = &arr[idx];
             // std::cout << "[GET] " << "Input key: " << key << ", hashed to: " << idx << std::endl; // debug
             for (std::pair<KeyType,ValueType>& entry : *list_at_idx) {;
                 if (key == entry.first) return entry.second;
+                attempts++;
+
+                // Búsqueda fallida
+                if (attempts >= MAX_ATTEMPTS_OH) break;
             }
-            std::cout << "Couldn't find any entry with key " << key << std::endl; // debug
+            // std::cout << "Couldn't find any entry with key " << key << std::endl; // debug
             return DEFAULT_VALUE;
         };
 
@@ -75,6 +82,7 @@ class OpenHashTable : public MapADT<KeyType, ValueType>
         ValueType put(KeyType key, ValueType data) 
         {
             int idx = hashing_method(key, arr_size); // indice obtenido al hashear la clave insertada
+            int attempts = 0;
             std::pair<KeyType,ValueType> new_entry(key,data); // par (key,value) de la nueva entrada 
             std::forward_list<std::pair<KeyType,ValueType>> *list_at_idx = &arr[idx]; // linked list posicionada en el indice idx
 
@@ -99,6 +107,12 @@ class OpenHashTable : public MapADT<KeyType, ValueType>
                     if (entry.first == new_entry.first) {
                         return data; // return el valor que intentó ser ingresado
                     }
+                    attempts++;
+
+                    // Inserción fallida
+                    if (attempts >= MAX_ATTEMPTS_OH) {
+                        return data;
+                    }
                 }
                 // si la clave no existía en la tabla, insertarla en la lista.
                 list_at_idx->push_front(new_entry);
@@ -112,7 +126,7 @@ class OpenHashTable : public MapADT<KeyType, ValueType>
         {
             int idx = hashing_method(key, arr_size);
             auto *list_at_idx = &arr[idx];
-            // Loop chano cortesía de StackOverflow (questions/14373934)
+            // Loop cortesía de StackOverflow (questions/14373934)
             for (auto iter = list_at_idx->begin(), prev = list_at_idx->before_begin(); iter != list_at_idx->end(); iter++, prev++) {
                 if (iter->first == key) {
                     ValueType erased_value = iter->second;

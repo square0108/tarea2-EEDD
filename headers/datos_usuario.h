@@ -60,7 +60,7 @@ class userdata {
 
         void print_data() 
         {
-            std::cout << university << "; " << user_id << "; " << username << "; " << number_tweets << "; " << friends_count << "; " << followers_count << "; " << created_at << std::endl;
+            std::cout << university << ";" << user_id << ";" << username << ";" << number_tweets << ";" << friends_count << ";" << followers_count << ";" << created_at << std::endl;
         }
 };
 #endif

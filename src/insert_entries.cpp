@@ -12,9 +12,9 @@
 #include "csv_data_insertion.h"
 #include "closed_hash.h"
 
-// Se inicializan todas las tablas hash con esta constante. Algunos otros primos grandes: {12821,17977,33533,65537,139969}.
-#define BIG_PRIME_SIZE 33533
-const bool _main_debug = 1;
+// Se inicializan todas las tablas hash con esta constante. Algunos otros primos grandes: {12821,17977,22187,30109,33533,65537,139969}.
+// Con ALL_TABLES_SIZE = 30109 el factor de carga se *aproximará* a 0.70 al insertar todas las 21070 entradas.  
+#define ALL_TABLES_SIZE 30109
 double total_running_time = 0;
 
 using namespace std;
@@ -22,13 +22,14 @@ using namespace std;
 /* Clase que almacena unicamente funciones estaticas para realizar experimentos sobre el dataset de Twitter.
 */
 template <typename KeyT>
-class TableTester {
+class InsertTester 
+{
     public:
         static void insertion_test(std::vector<userdata>& dataset, MapADT<KeyT,userdata>& hash_table, int n_insertions);
         static void insertion_test(std::vector<userdata>& dataset, std::unordered_map<KeyT,userdata>& map, int n_insertions);
 };
 
-/* IMPORTANTE: El codigo no puede ejecutarse solo con ./main, deben proporcionarse 3 argumentos en este orden:
+/* Syntax: ``./ejecutable <table type> <key type> <number of insertions>
 *
 * - <table type> : Tipo de tabla a usar. Posibles valores: {STL_map,open_hash,closed_hash}
 * - <key type> : Tipo de llave que se va a ocupar para hashear. Posibles valores: {user_id,username}
@@ -60,29 +61,30 @@ int main(int argc, char **argv)
         // Clave USERNAME ; Tabla STL MAP
         if (strcmp(table_type,"STL_map") == 0) {
             std::unordered_map<std::string,userdata> map;
-            TableTester<string>::insertion_test(twitter_values,map,num_elements);
+            map.reserve(ALL_TABLES_SIZE);
+            InsertTester<string>::insertion_test(twitter_values,map,num_elements);
         }
 
         // Clave USERNAME ; Tabla OPEN HASH
         else if (strcmp(table_type,"open_hash") == 0) {
-            tarea::OpenHashTable<string,userdata> openhash(BIG_PRIME_SIZE,string_hash);
-            TableTester<string>::insertion_test(twitter_values,openhash,num_elements);
+            tarea::OpenHashTable<string,userdata> openhash(ALL_TABLES_SIZE,string_hash);
+            InsertTester<string>::insertion_test(twitter_values,openhash,num_elements);
         }
 
         // Clave USERNAME ; Tablas CLOSED HASH
         else if (strcmp(table_type,"closed_hash_linear") == 0) {
-            ClosedHashTable<string, userdata> closed_hash(BIG_PRIME_SIZE,string_hash,LINEAR_PROBING);
-            TableTester<string>::insertion_test(twitter_values,closed_hash, num_elements);
+            ClosedHashTable<string, userdata> closed_hash(ALL_TABLES_SIZE,string_hash,LINEAR_PROBING);
+            InsertTester<string>::insertion_test(twitter_values,closed_hash, num_elements);
         }
 
         else if (strcmp(table_type,"closed_hash_quadratic") == 0) {
-            ClosedHashTable<string, userdata> closed_hash(BIG_PRIME_SIZE,string_hash,QUADRATIC_PROBING);
-            TableTester<string>::insertion_test(twitter_values,closed_hash, num_elements);
+            ClosedHashTable<string, userdata> closed_hash(ALL_TABLES_SIZE,string_hash,QUADRATIC_PROBING);
+            InsertTester<string>::insertion_test(twitter_values,closed_hash, num_elements);
         }
 
-        else if (strcmp(table_type,"closed_hash_quadratic") == 0) {
-            ClosedHashTable<string, userdata> closed_hash(BIG_PRIME_SIZE,string_hash,DOUBLE_HASHING);
-            TableTester<string>::insertion_test(twitter_values,closed_hash, num_elements);
+        else if (strcmp(table_type,"closed_hash_double") == 0) {
+            ClosedHashTable<string, userdata> closed_hash(ALL_TABLES_SIZE,string_hash,DOUBLE_HASHING);
+            InsertTester<string>::insertion_test(twitter_values,closed_hash, num_elements);
         }
     }
 
@@ -91,29 +93,30 @@ int main(int argc, char **argv)
         // Clave ID ; Tabla STL MAP
         if (strcmp(table_type,"STL_map") == 0) {
             std::unordered_map<unsigned long long int,userdata> map;
-            TableTester<unsigned long long int>::insertion_test(twitter_values,map,num_elements);
+            map.reserve(ALL_TABLES_SIZE);
+            InsertTester<unsigned long long int>::insertion_test(twitter_values,map,num_elements);
         }
 
         // Clave ID ; Tabla OPEN HASH
         else if (strcmp(table_type,"open_hash") == 0) {
-            tarea::OpenHashTable<unsigned long long int,userdata> openhash(BIG_PRIME_SIZE,CSandCompress);
-            TableTester<unsigned long long int>::insertion_test(twitter_values,openhash,num_elements);
+            tarea::OpenHashTable<unsigned long long int,userdata> openhash(ALL_TABLES_SIZE,CSandCompress);
+            InsertTester<unsigned long long int>::insertion_test(twitter_values,openhash,num_elements);
         }
 
         // Clave ID ; Tabla CLOSED HASH
         else if (strcmp(table_type,"closed_hash_linear") == 0) {
-            ClosedHashTable<unsigned long long int, userdata> closed_hash(BIG_PRIME_SIZE,CSandCompress,LINEAR_PROBING);
-            TableTester<unsigned long long int>::insertion_test(twitter_values,closed_hash, num_elements);
+            ClosedHashTable<unsigned long long int, userdata> closed_hash(ALL_TABLES_SIZE,CSandCompress,LINEAR_PROBING);
+            InsertTester<unsigned long long int>::insertion_test(twitter_values,closed_hash, num_elements);
         }
 
         else if (strcmp(table_type,"closed_hash_quadratic") == 0) {
-            ClosedHashTable<unsigned long long int, userdata> closed_hash(BIG_PRIME_SIZE,CSandCompress,QUADRATIC_PROBING);
-            TableTester<unsigned long long int>::insertion_test(twitter_values,closed_hash, num_elements);
+            ClosedHashTable<unsigned long long int, userdata> closed_hash(ALL_TABLES_SIZE,CSandCompress,QUADRATIC_PROBING);
+            InsertTester<unsigned long long int>::insertion_test(twitter_values,closed_hash, num_elements);
         }
 
-        else if (strcmp(table_type,"closed_hash_quadratic") == 0) {
-            ClosedHashTable<unsigned long long int, userdata> closed_hash(BIG_PRIME_SIZE,CSandCompress,DOUBLE_HASHING);
-            TableTester<unsigned long long int>::insertion_test(twitter_values,closed_hash, num_elements);
+        else if (strcmp(table_type,"closed_hash_double") == 0) {
+            ClosedHashTable<unsigned long long int, userdata> closed_hash(ALL_TABLES_SIZE,CSandCompress,DOUBLE_HASHING);
+            InsertTester<unsigned long long int>::insertion_test(twitter_values,closed_hash, num_elements);
         }
     }
 
@@ -130,7 +133,8 @@ int main(int argc, char **argv)
 }
 
 template <typename KeyT>
-void TableTester<KeyT>::insertion_test(std::vector<userdata>& dataset,MapADT<KeyT,userdata>& hash_table,int n_insertions) {
+void InsertTester<KeyT>::insertion_test(std::vector<userdata>& dataset,MapADT<KeyT,userdata>& hash_table,int n_insertions) 
+{
     if constexpr (std::is_same_v<KeyT, std::string>) {
         for (int i = 0; i < n_insertions; i++) {
             userdata current_user = dataset.at(i);
@@ -152,7 +156,8 @@ void TableTester<KeyT>::insertion_test(std::vector<userdata>& dataset,MapADT<Key
 }
 
 template <typename KeyT>
-void TableTester<KeyT>::insertion_test(std::vector<userdata>& dataset, std::unordered_map<KeyT,userdata>& map, int n_insertions) {
+void InsertTester<KeyT>::insertion_test(std::vector<userdata>& dataset, std::unordered_map<KeyT,userdata>& map, int n_insertions) 
+{
     if constexpr (std::is_same_v<KeyT, std::string>) {
         for (int i = 0; i < n_insertions; i++) {
             userdata current_user = dataset.at(i);

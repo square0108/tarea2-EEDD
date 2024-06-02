@@ -6,6 +6,9 @@
 #include <chrono>
 #include <type_traits>
 
+#ifndef CSV_PARSING_H
+#define CSV_PARSING_H
+
 #define CSV_NUM_COLUMNS 7
 #define CSV_NUM_ENTRIES 21070
 
@@ -98,3 +101,5 @@ std::vector<userdata> csv_to_vector(std::ifstream& file, size_t n_rows)
 }
 
 };
+
+#endif
